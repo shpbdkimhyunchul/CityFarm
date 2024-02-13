@@ -29,7 +29,6 @@ const { ToastModule } = NativeModules;
 
 const BASE_URL = 'https://www.naver.com';
 
-let toastPayStart = false;
 let loadingComplete = false;
 
 
@@ -48,7 +47,7 @@ const CityFarmWebView = ({ handleClose }) => {
   useEffect(() => {
     if (colorScheme === 'dark') {
       StatusBar.setBarStyle('dark-content'); // 다크 모드에서 밝은 텍스트 색상
-    }
+  }
     setStatusBarColor('dark-content');
     setStatusBarBackColor('#ffffff');
 
@@ -71,10 +70,18 @@ const CityFarmWebView = ({ handleClose }) => {
 
 
   useEffect(() => {
-    if (webViewRef && webViewRef.current.clearCache) webViewRef.current.clearCache();
+
+    console.log('--------startsplashImage-------------------');
+    const splash = setTimeout(() => {
+      SplashScreen.hide();
+    }, 1000);  //스플래시 스크린 활성화 시간 (1초)
+
+    if (webViewRef && webViewRef.clearCache) webViewRef.clearCache();
+    return () => clearTimeout(splash);
+
   }, [webViewRef]);
 
-
+    
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -93,17 +100,17 @@ const CityFarmWebView = ({ handleClose }) => {
   const handleWebViewLoad = () => {
 
     console.log('handleLoad');
-    setTimeout(() => {
-      SplashScreen.hide();
-    }, 300);
+    // setTimeout(() => {
+    //   SplashScreen.hide();
+    // }, 300);
 
   };
 
   const handleLoadStart = (res) => {
     console.log('handleLoadStart');
-    // console.log(res);
+    console.log('shpbd_platform = ' + Platform.OS);
     if (Platform.OS === 'ios') {
-      if (!toastPayStart) {
+     
         setLoading(true);
         loadingComplete = false;
         setTimeout(() => {
@@ -111,7 +118,7 @@ const CityFarmWebView = ({ handleClose }) => {
             setLoading(true);
           }
         }, 500);
-      }
+     
     }
 
   };
@@ -119,10 +126,10 @@ const CityFarmWebView = ({ handleClose }) => {
   const handleLoadEnd = () => {
     console.log('handleLoadEnd');
     if (Platform.OS === 'ios') {
-      if (!toastPayStart) {
+ 
         loadingComplete = true;
         setLoading(false);
-      }
+      
     }
   };
 
@@ -197,11 +204,17 @@ const CityFarmWebView = ({ handleClose }) => {
           allowFileAccess={true}
           onNavigationStateChange={({ canGoBack }) => { setGoBackable(canGoBack) }}
           onScroll={(event) => handleEvent(event)}
+          onLoadProgress={({ nativeEvent }) => {
+            console.log("shpbd===" + nativeEvent.canGoBack)
+
+            setGoBackable(nativeEvent.canGoBack)
+        }}
+
           onMessage={(event) => {
             const url = event.nativeEvent.data;
-            console.log("shpbd" + url)
-            setGoBackable(url !== BASE_URL);
-            console.log('onMessage', event.nativeEvent.data);
+            console.log("shpbd====" + url)
+            // setGoBackable(url !== BASE_URL);
+            console.log('shpbd_onMessage===', event.nativeEvent.data);
           }}
           // renderLoading={() => {
           //   <LoadingBar/>
